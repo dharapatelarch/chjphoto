@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMINA — Photography</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --cream:#f5f0e8;--ink:#0d0d0d;--rust:#c8472c;--gold:#b89a5a;--mist:#ddd6c8;
+    --font-display:'Bebas Neue',sans-serif;
+    --font-serif:'Cormorant Garamond',serif;
+    --font-body:'DM Sans',sans-serif;
+  }
+  html{scroll-behavior:smooth;overflow-x:hidden}
+  body{background:var(--ink);color:var(--cream);font-family:var(--font-body);cursor:none;overflow-x:hidden}
+  
+  /* Custom cursor */
+  #cursor{position:fixed;width:12px;height:12px;background:var(--rust);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.3s,height 0.3s,background 0.3s;mix-blend-mode:difference}
+  #cursor-ring{position:fixed;width:40px;height:40px;border:1px solid rgba(245,240,232,0.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.15s ease;mix-blend-mode:difference}
+  body:has(a:hover) #cursor,body:has(button:hover) #cursor{width:20px;height:20px;background:var(--gold)}
+  body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{width:60px;height:60px;border-color:var(--gold)}
+
+  /* Nav */
+  nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1.5rem 3rem;display:flex;justify-content:space-between;align-items:center;mix-blend-mode:difference}
+  .logo{font-family:var(--font-display);font-size:2rem;letter-spacing:0.15em;color:var(--cream)}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{color:var(--cream);text-decoration:none;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.7;transition:opacity 0.3s}
+  .nav-links a:hover{opacity:1}
+  .slide-counter{font-family:var(--font-display);font-size:0.9rem;letter-spacing:0.1em;opacity:0.5;position:fixed;bottom:2rem;right:3rem;z-index:1000}
+
+  /* Slides */
+  .slide{min-height:100vh;display:flex;position:relative;overflow:hidden}
+  .slide-inner{width:100%;display:flex;align-items:center;justify-content:center;position:relative}
+
+  /* ===== SLIDE 1: HERO ===== */
+  #s1{background:var(--ink)}
+  .hero-bg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);gap:2px;opacity:0.25}
+  .hero-bg-cell{background:var(--mist);animation:cellPulse 4s ease-in-out infinite}
+  .hero-bg-cell:nth-child(odd){animation-delay:-2s}
+  @keyframes cellPulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+  .hero-content{position:relative;z-index:2;text-align:center;padding:2rem}
+  .hero-eyebrow{font-family:var(--font-body);font-size:0.75rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--rust);margin-bottom:1.5rem;animation:fadeUp 1s 0.3s both}
+  .hero-title{font-family:var(--font-display);font-size:clamp(5rem,15vw,14rem);line-height:0.9;letter-spacing:0.05em;color:var(--cream);animation:fadeUp 1s 0.5s both}
+  .hero-title em{font-family:var(--font-serif);font-style:italic;color:var(--gold);font-size:0.7em}
+  .hero-sub{font-family:var(--font-serif);font-style:italic;font-size:1.5rem;color:var(--mist);margin-top:1.5rem;animation:fadeUp 1s 0.7s both}
+  .hero-scroll{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.5rem;animation:fadeUp 1s 1.2s both;cursor:pointer}
+  .hero-scroll span{font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;opacity:0.5}
+  .scroll-line{width:1px;height:60px;background:linear-gradient(var(--cream),transparent);animation:scrollDrop 1.5s ease-in-out infinite}
+  @keyframes scrollDrop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}50.01%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ===== SLIDE 2: PORTFOLIO GRID ===== */
+  #s2{background:#111;padding:6rem 0}
+  .grid-header{text-align:center;padding:0 3rem 3rem;position:relative;z-index:2}
+  .section-label{font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--rust);margin-bottom:1rem}
+  .section-title{font-family:var(--font-display);font-size:clamp(3rem,7vw,7rem);letter-spacing:0.05em}
+  .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:1200px;margin:0 auto;padding:0 3rem}
+  .photo-card{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:4/5}
+  .photo-card-img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94),filter 0.3s}
+  .photo-card:hover .photo-card-img{transform:scale(1.08);filter:brightness(0.7)}
+  .photo-card-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem;background:linear-gradient(transparent 50%,rgba(0,0,0,0.8));opacity:0;transition:opacity 0.3s}
+  .photo-card:hover .photo-card-overlay{opacity:1}
+  .photo-card-title{font-family:var(--font-serif);font-size:1.3rem;font-style:italic;margin-bottom:0.3rem}
+  .photo-card-cat{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold)}
+  .photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:3rem;letter-spacing:0.1em;transition:transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)}
+  .photo-card:hover .photo-placeholder{transform:scale(1.08)}
+
+  /* Photo placeholder colors */
+  .pc1{background:linear-gradient(135deg,#2c1810,#8b3a2a)}
+  .pc2{background:linear-gradient(135deg,#1a2035,#3a5a8c)}
+  .pc3{background:linear-gradient(135deg,#1f2d1f,#4a7a5a)}
+  .pc4{background:linear-gradient(135deg,#2d2020,#7a4a3a)}
+  .pc5{background:linear-gradient(135deg,#1a1a2d,#5a3a7a)}
+  .pc6{background:linear-gradient(135deg,#2d2d1a,#8a7a2a)}
+
+  /* ===== SLIDE 3: ABOUT / SPLIT ===== */
+  #s3{background:var(--cream);color:var(--ink)}
+  .split-layout{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+  .split-left{display:flex;align-items:center;justify-content:center;padding:6rem;position:relative;overflow:hidden}
+  .about-portrait{width:100%;aspect-ratio:3/4;position:relative}
+  .portrait-frame{width:80%;aspect-ratio:3/4;background:linear-gradient(160deg,#8b7355,#4a3728);position:relative;margin-left:auto}
+  .portrait-frame::before{content:'';position:absolute;inset:-20px 20px 20px -20px;border:2px solid var(--ink);z-index:0}
+  .portrait-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:5rem;color:rgba(245,240,232,0.3);letter-spacing:0.1em}
+  .split-right{display:flex;flex-direction:column;justify-content:center;padding:6rem;background:var(--cream)}
+  .about-tag{font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--rust);margin-bottom:1.5rem}
+  .about-heading{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,5rem);color:var(--ink);line-height:1;margin-bottom:1.5rem}
+  .about-heading em{font-family:var(--font-serif);font-style:italic;color:var(--gold)}
+  .about-body{font-family:var(--font-serif);font-size:1.15rem;line-height:1.8;color:#333;margin-bottom:2rem}
+  .stat-row{display:flex;gap:3rem;margin-top:2rem}
+  .stat-item{display:flex;flex-direction:column;gap:0.3rem}
+  .stat-num{font-family:var(--font-display);font-size:2.5rem;color:var(--ink)}
+  .stat-label{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:#888}
+
+  /* ===== SLIDE 4: FEATURED / PARALLAX ===== */
+  #s4{background:var(--ink);overflow:hidden;min-height:100vh;display:flex;align-items:center;position:relative}
+  .featured-bg{position:absolute;inset:-20%;background:linear-gradient(135deg,#1a0f0a 30%,#2a1510 60%,#0a0a15);transition:transform 0.1s}
+  .featured-content{position:relative;z-index:2;padding:6rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1400px;margin:0 auto;width:100%}
+  .featured-image-wrap{position:relative}
+  .featured-img{width:100%;aspect-ratio:4/5;background:linear-gradient(160deg,#3a2a1a,#1a1a3a);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:6rem;color:rgba(245,240,232,0.15);position:relative;overflow:hidden}
+  .featured-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(0,0,0,0.6))}
+  .featured-accent{position:absolute;top:-2rem;right:-2rem;width:200px;height:200px;border:1px solid var(--gold);opacity:0.3}
+  .featured-text{padding-left:2rem}
+  .featured-eyebrow{font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--rust);margin-bottom:1rem}
+  .featured-title{font-family:var(--font-display);font-size:clamp(3rem,5vw,6rem);line-height:1;margin-bottom:1.5rem}
+  .featured-body{font-family:var(--font-serif);font-style:italic;font-size:1.2rem;line-height:1.8;color:var(--mist);margin-bottom:2rem}
+  .btn-primary{display:inline-flex;align-items:center;gap:0.8rem;padding:1rem 2.5rem;border:1px solid var(--gold);color:var(--gold);text-decoration:none;font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;transition:all 0.3s;position:relative;overflow:hidden}
+  .btn-primary::before{content:'';position:absolute;inset:0;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform 0.3s}
+  .btn-primary:hover{color:var(--ink)}
+  .btn-primary:hover::before{transform:scaleX(1)}
+  .btn-primary span{position:relative}
+
+  /* ===== SLIDE 5: CATEGORIES ===== */
+  #s5{background:#0a0a0a;padding:6rem 3rem}
+  .categories-header{text-align:center;margin-bottom:4rem}
+  .categories-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.05);max-width:1200px;margin:0 auto}
+  .cat-card{background:var(--ink);padding:3rem 2rem;text-align:center;cursor:pointer;transition:background 0.3s;position:relative;overflow:hidden}
+  .cat-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--rust);transform:scaleX(0);transition:transform 0.3s}
+  .cat-card:hover{background:#1a1a1a}
+  .cat-card:hover::before{transform:scaleX(1)}
+  .cat-icon{font-size:2.5rem;margin-bottom:1.5rem;display:block}
+  .cat-name{font-family:var(--font-display);font-size:1.8rem;letter-spacing:0.05em;margin-bottom:0.5rem}
+  .cat-count{font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+  .cat-desc{font-size:0.85rem;color:#888;line-height:1.6}
+  .cat-card:hover .cat-icon{animation:iconBounce 0.5s}
+  @keyframes iconBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  /* ===== SLIDE 6: TESTIMONIALS ===== */
+  #s6{background:var(--cream);color:var(--ink);padding:6rem 3rem;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .testimonial-wrap{max-width:900px;width:100%;position:relative}
+  .testimonial-track{overflow:hidden}
+  .testimonial-slide{display:none;animation:testimonialIn 0.5s}
+  .testimonial-slide.active{display:block}
+  @keyframes testimonialIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+  .testimonial-quote{font-family:var(--font-serif);font-size:clamp(1.5rem,3vw,2.2rem);font-style:italic;line-height:1.6;color:var(--ink);margin-bottom:2rem;position:relative;padding-left:3rem}
+  .testimonial-quote::before{content:'\201C';position:absolute;left:0;top:-1rem;font-size:6rem;color:var(--rust);font-family:var(--font-serif);line-height:1}
+  .testimonial-author{display:flex;align-items:center;gap:1rem;padding-left:3rem}
+  .author-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8b7355,#4a3728);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.2rem;color:var(--cream)}
+  .author-info .name{font-weight:500;font-size:0.95rem}
+  .author-info .role{font-size:0.8rem;color:#888;margin-top:0.2rem}
+  .testimonial-dots{display:flex;gap:0.5rem;margin-top:3rem;justify-content:center}
+  .dot{width:30px;height:2px;background:#ccc;cursor:pointer;transition:background 0.3s,width 0.3s}
+  .dot.active{background:var(--rust);width:50px}
+  .t-nav{display:flex;gap:1rem;margin-top:2rem;justify-content:center}
+  .t-btn{width:50px;height:50px;border:1px solid var(--ink);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:all 0.3s}
+  .t-btn:hover{background:var(--ink);color:var(--cream)}
+
+  /* ===== SLIDE 7: PROCESS ===== */
+  #s7{background:var(--ink);padding:6rem 3rem}
+  .process-header{text-align:center;margin-bottom:5rem}
+  .process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;max-width:1200px;margin:0 auto;position:relative}
+  .process-steps::before{content:'';position:absolute;top:50px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+  .step{text-align:center;padding:2rem;position:relative;cursor:pointer}
+  .step-number{width:100px;height:100px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;font-family:var(--font-display);font-size:2.5rem;color:var(--gold);position:relative;z-index:2;background:var(--ink);transition:all 0.3s}
+  .step:hover .step-number{background:var(--gold);color:var(--ink);transform:scale(1.1)}
+  .step-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:0.05em;margin-bottom:1rem}
+  .step-desc{font-size:0.85rem;color:#888;line-height:1.7}
+  .step-detail{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;align-items:center;justify-content:center}
+  .step-detail.open{display:flex}
+  .step-detail-inner{background:var(--ink);border:1px solid var(--gold);padding:4rem;max-width:600px;text-align:center;position:relative}
+  .close-btn{position:absolute;top:1rem;right:1.5rem;background:none;border:none;color:var(--cream);font-size:1.5rem;cursor:pointer}
+
+  /* ===== SLIDE 8: CONTACT ===== */
+  #s8{background:#0d0d0d;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:6rem 3rem}
+  .contact-wrap{max-width:700px;width:100%;text-align:center}
+  .contact-title{font-family:var(--font-display);font-size:clamp(3rem,8vw,8rem);line-height:1;margin-bottom:1rem}
+  .contact-sub{font-family:var(--font-serif);font-style:italic;font-size:1.3rem;color:var(--mist);margin-bottom:3rem}
+  .contact-form{display:flex;flex-direction:column;gap:1.5rem;text-align:left}
+  .form-group{position:relative}
+  .form-group input,.form-group textarea,.form-group select{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.2);padding:1rem 0;color:var(--cream);font-family:var(--font-body);font-size:1rem;outline:none;transition:border-color 0.3s;-webkit-appearance:none}
+  .form-group input:focus,.form-group textarea:focus{border-bottom-color:var(--gold)}
+  .form-group textarea{resize:none;height:100px}
+  .form-group label{position:absolute;top:1rem;left:0;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;color:#888;transition:all 0.3s;pointer-events:none}
+  .form-group input:focus ~ label,.form-group input:not(:placeholder-shown) ~ label,.form-group textarea:focus ~ label,.form-group textarea:not(:placeholder-shown) ~ label{top:-0.5rem;font-size:0.65rem;color:var(--gold)}
+  .form-group select option{background:var(--ink);color:var(--cream)}
+  .submit-btn{width:100%;padding:1.2rem;background:transparent;border:1px solid var(--rust);color:var(--rust);font-family:var(--font-display);font-size:1.5rem;letter-spacing:0.2em;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;margin-top:1rem}
+  .submit-btn::before{content:'';position:absolute;inset:0;background:var(--rust);transform:scaleX(0);transform-origin:left;transition:transform 0.4s}
+  .submit-btn:hover{color:var(--cream)}
+  .submit-btn:hover::before{transform:scaleX(1)}
+  .submit-btn span{position:relative}
+  .social-links{display:flex;justify-content:center;gap:2rem;margin-top:3rem}
+  .social-link{font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;color:#888;text-decoration:none;transition:color 0.3s}
+  .social-link:hover{color:var(--gold)}
+
+  /* Footer */
+  footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.05);padding:2rem 3rem;display:flex;justify-content:space-between;align-items:center}
+  footer .f-logo{font-family:var(--font-display);font-size:1.5rem;letter-spacing:0.15em;color:var(--cream)}
+  footer .f-copy{font-size:0.75rem;color:#555;letter-spacing:0.1em}
+
+  /* Scroll reveal */
+  .reveal{opacity:0;transform:translateY(40px);transition:opacity 0.8s,transform 0.8s}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  .reveal-delay-1{transition-delay:0.1s}
+  .reveal-delay-2{transition-delay:0.2s}
+  .reveal-delay-3{transition-delay:0.3s}
+  .reveal-delay-4{transition-delay:0.4s}
+
+  /* Image grain overlay */
+  body::after{content:'';position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:9000;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* Loading screen */
+  #loader{position:fixed;inset:0;background:var(--ink);z-index:10000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;transition:opacity 0.8s,visibility 0.8s}
+  #loader.hidden{opacity:0;visibility:hidden}
+  .loader-logo{font-family:var(--font-display);font-size:4rem;letter-spacing:0.2em;color:var(--cream);animation:loaderPulse 1.5s ease-in-out infinite}
+  .loader-bar-wrap{width:200px;height:1px;background:rgba(255,255,255,0.1)}
+  .loader-bar{height:100%;background:var(--rust);width:0%;transition:width 0.1s}
+  @keyframes loaderPulse{0%,100%{opacity:0.5}50%{opacity:1}}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">LUMINA</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="lbar"></div></div>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <div class="logo">LUMINA</div>
+  <ul class="nav-links">
+    <li><a href="#s2">Work</a></li>
+    <li><a href="#s3">About</a></li>
+    <li><a href="#s5">Services</a></li>
+    <li><a href="#s8">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="slide-counter" id="sc">01 / 08</div>
+
+<!-- SLIDE 1: HERO -->
+<section class="slide" id="s1">
+  <div class="slide-inner">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Fine Art Photography</div>
+      <div class="hero-title">LUMI<em>NA</em></div>
+      <div class="hero-sub">Where light becomes language</div>
+      <div class="hero-scroll" onclick="document.getElementById('s2').scrollIntoView({behavior:'smooth'})">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: PORTFOLIO GRID -->
+<section class="slide" id="s2" style="display:block;padding:6rem 0">
+  <div class="grid-header reveal">
+    <div class="section-label">Portfolio</div>
+    <div class="section-title">SELECTED WORK</div>
+  </div>
+  <div class="photo-grid reveal reveal-delay-1">
+    <div class="photo-card" onclick="openLightbox(0)">
+      <div class="photo-placeholder pc1">DAWN</div>
+      <div class="photo-card-overlay">
+        <div class="photo-card-title">First Light</div>
+        <div class="photo-card-cat">Landscape</div>
+      </div>
+    </div>
+    <div class="photo-card" onclick="openLightbox(1)">
+      <div class="photo-placeholder pc2">SEA</div>
+      <div class="photo-card-overlay">
+        <div class="photo-card-title">Oceanic Silence</div>
+        <div class="photo-card-cat">Seascape</div>
+      </div>
+    </div>
+    <div class="photo-card" onclick="openLightbox(2)">
+      <div class="photo-placeholder pc3">WILD</div>
+      <div class="photo-card-overlay">
+        <div class="photo-card-title">Emerald Depths</div>
+        <div class="photo-card-cat">Nature</div>
+      </div>
+    </div>
+    <div class="photo-card" onclick="openLightbox(3)">
+      <div class="photo-placeholder pc4">DUSK</div>
+      <div class="photo-card-overlay">
+        <div class="photo-card-title">Amber Hours</div>
+        <div class="photo-card-cat">Portrait</div>
+      </div>
+    </div>
+    <div class="photo-card" onclick="openLightbox(4)">
+      <div class="photo-placeholder pc5">NIGHT</div>
+      <div class="photo-card-overlay">
+        <div class="photo-card-title">City Stars</div>
+        <div class="photo-card-cat">Urban</div>
+      </div>
+    </div>
+    <div class="photo-card" onclick="openLightbox(5)">
+      <div class="photo-placeholder pc6">GOLD</div>
+      <div class="photo-card-overlay">
+        <div class="photo-card-title">Harvest Light</div>
+        <div class="photo-card-cat">Fine Art</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:5000;align-items:center;justify-content:center;flex-direction:column">
+  <button onclick="closeLightbox()" style="position:absolute;top:2rem;right:2rem;background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;width:50px;height:50px;cursor:pointer;font-size:1.2rem;">✕</button>
+  <div id="lb-img" style="width:60vw;max-width:800px;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:5rem;letter-spacing:0.1em"></div>
+  <div id="lb-info" style="text-align:center;margin-top:2rem">
+    <div id="lb-title" style="font-family:'Cormorant Garamond';font-style:italic;font-size:1.8rem;margin-bottom:0.5rem"></div>
+    <div id="lb-cat" style="font-size:0.7rem;letter-spacing:0.3em;text-transform:uppercase;color:#b89a5a"></div>
+  </div>
+  <div style="display:flex;gap:2rem;margin-top:2rem">
+    <button onclick="lbPrev()" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:0.8rem 2rem;cursor:pointer;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;transition:all 0.3s" onmouseover="this.style.background='#c8472c'" onmouseout="this.style.background='none'">← Prev</button>
+    <button onclick="lbNext()" style="background:none;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:0.8rem 2rem;cursor:pointer;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;transition:all 0.3s" onmouseover="this.style.background='#c8472c'" onmouseout="this.style.background='none'">Next →</button>
+  </div>
+</div>
+
+<!-- SLIDE 3: ABOUT -->
+<section class="slide" id="s3">
+  <div class="split-layout">
+    <div class="split-left reveal">
+      <div class="about-portrait">
+        <div class="portrait-frame">
+          <div class="portrait-inner">PHOTO</div>
+        </div>
+      </div>
+    </div>
+    <div class="split-right">
+      <div class="about-tag reveal">About the artist</div>
+      <div class="about-heading reveal reveal-delay-1">SEEING THE<br><em>Unseen</em></div>
+      <p class="about-body reveal reveal-delay-2">I am a photographer obsessed with the interplay of shadow and light — moments that exist for a fraction of a second, yet tell stories that echo through a lifetime. My lens is drawn to the quiet drama of everyday life, the raw beauty of untouched landscapes, and the profound vulnerability of the human face.</p>
+      <p class="about-body reveal reveal-delay-3">Based between Mumbai and the Himalayas, I work across fine art, editorial, and commercial photography, always chasing that one perfect frame where everything aligns.</p>
+      <div class="stat-row reveal reveal-delay-4">
+        <div class="stat-item"><div class="stat-num">12+</div><div class="stat-label">Years of craft</div></div>
+        <div class="stat-item"><div class="stat-num">400+</div><div class="stat-label">Sessions</div></div>
+        <div class="stat-item"><div class="stat-num">28</div><div class="stat-label">Awards</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: FEATURED -->
+<section class="slide" id="s4">
+  <div class="featured-bg" id="featBg"></div>
+  <div class="featured-content">
+    <div class="featured-image-wrap reveal">
+      <div class="featured-img">
+        FEATURE<br>STORY
+        <div class="featured-accent"></div>
+      </div>
+    </div>
+    <div class="featured-text">
+      <div class="featured-eyebrow reveal">Featured Series</div>
+      <div class="featured-title reveal reveal-delay-1">THE GOLDEN<br>HOUR</div>
+      <p class="featured-body reveal reveal-delay-2">"There is a moment, just before the sun touches the horizon, when the entire world is painted in impossible gold. I have spent years chasing it. I have never been disappointed."</p>
+      <a href="#s8" class="btn-primary reveal reveal-delay-3"><span>View Full Series</span><span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: CATEGORIES -->
+<section class="slide" id="s5" style="display:block">
+  <div class="categories-header">
+    <div class="section-label reveal">What I do</div>
+    <div class="section-title reveal reveal-delay-1">SPECIALITIES</div>
+  </div>
+  <div class="categories-grid reveal reveal-delay-2">
+    <div class="cat-card">
+      <span class="cat-icon">◆</span>
+      <div class="cat-name">PORTRAIT</div>
+      <div class="cat-count">48 Projects</div>
+      <div class="cat-desc">Intimate storytelling through faces — capturing the soul behind the skin.</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">◇</span>
+      <div class="cat-name">LANDSCAPE</div>
+      <div class="cat-count">62 Projects</div>
+      <div class="cat-desc">The earth as canvas — from Himalayan peaks to coastal dunes at twilight.</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">▲</span>
+      <div class="cat-name">WEDDING</div>
+      <div class="cat-count">110 Couples</div>
+      <div class="cat-desc">Your story, documented with artistry. No posing. Just pure, beautiful truth.</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">○</span>
+      <div class="cat-name">FINE ART</div>
+      <div class="cat-count">35 Editions</div>
+      <div class="cat-desc">Limited edition prints — photographs conceived as art objects for collectors.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: TESTIMONIALS -->
+<section class="slide" id="s6" style="display:block;background:var(--cream);color:var(--ink)">
+  <div class="section-label reveal" style="text-align:center;margin-bottom:0.5rem">Testimonials</div>
+  <div class="section-title reveal reveal-delay-1" style="text-align:center;font-family:'Bebas Neue';font-size:clamp(3rem,7vw,7rem);letter-spacing:0.05em;color:var(--ink);margin-bottom:3rem">WHAT THEY SAY</div>
+  <div class="testimonial-wrap">
+    <div class="testimonial-track">
+      <div class="testimonial-slide active">
+        <p class="testimonial-quote">She didn't just photograph our wedding — she captured a feeling. Looking at the images is like being transported back to that moment, with all the emotion intact.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">RK</div>
+          <div class="author-info"><div class="name">Riya & Karan Mehta</div><div class="role">Wedding Clients, 2024</div></div>
+        </div>
+      </div>
+      <div class="testimonial-slide">
+        <p class="testimonial-quote">The portrait session was unlike anything I had experienced. There was a calm authority in the studio that made me forget the camera entirely. The results are breathtaking.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">AD</div>
+          <div class="author-info"><div class="name">Ananya Desai</div><div class="role">Portrait Client</div></div>
+        </div>
+      </div>
+      <div class="testimonial-slide">
+        <p class="testimonial-quote">We commissioned a landscape series for our corporate headquarters. The prints transformed the space entirely. Visitors comment on them constantly. Worth every rupee.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">SJ</div>
+          <div class="author-info"><div class="name">Suresh Joshi</div><div class="role">Corporate Client, Tata Group</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-dots">
+      <div class="dot active" onclick="goToT(0)"></div>
+      <div class="dot" onclick="goToT(1)"></div>
+      <div class="dot" onclick="goToT(2)"></div>
+    </div>
+    <div class="t-nav">
+      <button class="t-btn" onclick="prevT()">←</button>
+      <button class="t-btn" onclick="nextT()">→</button>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: PROCESS -->
+<section class="slide" id="s7" style="display:block">
+  <div class="process-header">
+    <div class="section-label reveal">How it works</div>
+    <div class="section-title reveal reveal-delay-1" style="font-family:'Bebas Neue';font-size:clamp(3rem,7vw,7rem);letter-spacing:0.05em">THE PROCESS</div>
+  </div>
+  <div class="process-steps reveal reveal-delay-2">
+    <div class="step" onclick="openStep(0)">
+      <div class="step-number">01</div>
+      <div class="step-title">CONSULT</div>
+      <div class="step-desc">A conversation about your vision, the story you want to tell, and the feeling you want to preserve.</div>
+    </div>
+    <div class="step" onclick="openStep(1)">
+      <div class="step-number">02</div>
+      <div class="step-title">PLAN</div>
+      <div class="step-desc">We scout locations, plan for light, and choreograph the invisible — so everything feels spontaneous.</div>
+    </div>
+    <div class="step" onclick="openStep(2)">
+      <div class="step-number">03</div>
+      <div class="step-title">SHOOT</div>
+      <div class="step-desc">The session itself. Calm, intentional, unhurried. You forget I'm there. That's when the magic happens.</div>
+    </div>
+    <div class="step" onclick="openStep(3)">
+      <div class="step-number">04</div>
+      <div class="step-title">DELIVER</div>
+      <div class="step-desc">Hand-edited prints and a curated digital gallery — delivered within 3 weeks, archived for a lifetime.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Step Modal -->
+<div class="step-detail" id="stepModal">
+  <div class="step-detail-inner">
+    <button class="close-btn" onclick="closeStep()">✕</button>
+    <div id="stepModalNum" style="font-family:'Bebas Neue';font-size:5rem;color:#b89a5a;line-height:1"></div>
+    <div id="stepModalTitle" style="font-family:'Bebas Neue';font-size:2.5rem;margin:1rem 0"></div>
+    <div id="stepModalDesc" style="font-family:'Cormorant Garamond';font-style:italic;font-size:1.2rem;color:#aaa;line-height:1.8"></div>
+  </div>
+</div>
+
+<!-- SLIDE 8: CONTACT -->
+<section class="slide" id="s8">
+  
+     
+      
+    <div class="social-links reveal reveal-delay-3">
+      <a href="#" class="social-link">Instagram</a>
+      <a href="#" class="social-link">Behance</a>
+      <a href="#" class="social-link">VSCO</a>
+      <a href="#" class="social-link">LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">LUMINA</div>
+  <div class="f-copy">© 2025 Lumina Photography. All rights reserved.</div>
+</footer>
+
+<script>
+// Loader
+let p=0;const lb=document.getElementById('lbar');const ldr=document.getElementById('loader');
+const li=setInterval(()=>{p+=Math.random()*15;if(p>=100){p=100;clearInterval(li);setTimeout(()=>ldr.classList.add('hidden'),300)}lb.style.width=p+'%'},120);
+
+// Cursor
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';setTimeout(()=>{ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px'},80)});
+
+// Hero BG grid
+const hbg=document.getElementById('heroBg');
+for(let i=0;i<24;i++){const d=document.createElement('div');d.className='hero-bg-cell';hbg.appendChild(d)}
+
+// Slide counter
+const slides=[document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3'),document.getElementById('s4'),document.getElementById('s5'),document.getElementById('s6'),document.getElementById('s7'),document.getElementById('s8')];
+const sc=document.getElementById('sc');
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const i=slides.indexOf(e.target)+1;sc.textContent=(i<10?'0'+i:i)+' / 08'}})},{threshold:0.5});
+slides.forEach(s=>{if(s)io.observe(s)});
+
+// Scroll reveal
+const rev=document.querySelectorAll('.reveal');
+const revObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+rev.forEach(r=>revObs.observe(r));
+
+// Parallax on featured
+const fb=document.getElementById('featBg');
+window.addEventListener('scroll',()=>{const s4=document.getElementById('s4');const r=s4.getBoundingClientRect();const p=r.top/window.innerHeight;if(fb)fb.style.transform=`translateY(${p*40}px)`});
+
+// Lightbox
+const photos=[
+  {title:'First Light',cat:'Landscape',bg:'linear-gradient(135deg,#2c1810,#8b3a2a)',label:'DAWN'},
+  {title:'Oceanic Silence',cat:'Seascape',bg:'linear-gradient(135deg,#1a2035,#3a5a8c)',label:'SEA'},
+  {title:'Emerald Depths',cat:'Nature',bg:'linear-gradient(135deg,#1f2d1f,#4a7a5a)',label:'WILD'},
+  {title:'Amber Hours',cat:'Portrait',bg:'linear-gradient(135deg,#2d2020,#7a4a3a)',label:'DUSK'},
+  {title:'City Stars',cat:'Urban',bg:'linear-gradient(135deg,#1a1a2d,#5a3a7a)',label:'NIGHT'},
+  {title:'Harvest Light',cat:'Fine Art',bg:'linear-gradient(135deg,#2d2d1a,#8a7a2a)',label:'GOLD'}
+];
+let lbIdx=0;
+function openLightbox(i){lbIdx=i;updateLB();document.getElementById('lightbox').style.display='flex'}
+function closeLightbox(){document.getElementById('lightbox').style.display='none'}
+function updateLB(){const p=photos[lbIdx];const img=document.getElementById('lb-img');img.style.background=p.bg;img.textContent=p.label;document.getElementById('lb-title').textContent=p.title;document.getElementById('lb-cat').textContent=p.cat}
+function lbPrev(){lbIdx=(lbIdx-1+photos.length)%photos.length;updateLB()}
+function lbNext(){lbIdx=(lbIdx+1)%photos.length;updateLB()}
+
+// Testimonials
+let tIdx=0;const tSlides=document.querySelectorAll('.testimonial-slide'),tDots=document.querySelectorAll('.dot');
+function goToT(i){tSlides[tIdx].classList.remove('active');tDots[tIdx].classList.remove('active');tIdx=i;tSlides[tIdx].classList.add('active');tDots[tIdx].classList.add('active')}
+function nextT(){goToT((tIdx+1)%tSlides.length)}
+function prevT(){goToT((tIdx-1+tSlides.length)%tSlides.length)}
+setInterval(nextT,5000);
+
+// Step modal
+const steps=[
+  {num:'01',title:'CONSULT',desc:'A relaxed, unhurried conversation — in person, over chai, or via video call. We talk about you, your vision, what you want to feel when you look at the final images. There is no brief too simple, no dream too ambitious.'},
+  {num:'02',title:'PLAN',desc:'I become an obsessive researcher. Locations are scouted at the right time of day. Weather patterns are studied. Shot lists are built but held loosely — because the best moments are never planned.'},
+  {num:'03',title:'SHOOT',desc:'The session itself is a collaboration. I guide but I do not direct. I watch, I wait, and I capture. You forget the camera exists. That moment of forgetting — that is when the real photograph happens.'},
+  {num:'04',title:'DELIVER',desc:'Every image is individually edited and colour-graded by hand. You receive a private digital gallery within 3 weeks, plus any print products we have agreed upon. Your files are archived securely for 10 years.'}
+];
+function openStep(i){const s=steps[i];document.getElementById('stepModalNum').textContent=s.num;document.getElementById('stepModalTitle').textContent=s.title;document.getElementById('stepModalDesc').textContent=s.desc;document.getElementById('stepModal').classList.add('open')}
+function closeStep(){document.getElementById('stepModal').classList.remove('open')}
+
+// Form
+function submitForm(){
+  const n=document.getElementById('fname').value;
+  if(!n){alert('Please fill in your name.');return}
+  const btn=document.querySelector('.submit-btn span');btn.textContent='MESSAGE SENT ✓';
+  setTimeout(()=>btn.textContent='SEND MESSAGE →',3000);
+}
+
+// Keyboard nav for lightbox
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('lightbox').style.display==='flex'){
+    if(e.key==='ArrowLeft')lbPrev();
+    if(e.key==='ArrowRight')lbNext();
+    if(e.key==='Escape')closeLightbox();
+  }
+  if(document.getElementById('stepModal').classList.contains('open')&&e.key==='Escape')closeStep();
+});
+</script>
+</body>
+</html>
